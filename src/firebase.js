@@ -1,0 +1,42 @@
+import { initializeApp } from "firebase/app";
+import { getAuth } from "firebase/auth";
+import { getAnalytics, isSupported, logEvent } from "firebase/analytics";
+
+const firebaseConfig = {
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || "G-C8GXP79P12"
+};
+
+export const app = initializeApp(firebaseConfig);
+export const auth = getAuth(app);
+
+// Initialize analytics safely
+let analyticsInstance = null;
+
+if (typeof window !== "undefined") {
+  isSupported().then((supported) => {
+    if (supported) {
+      analyticsInstance = getAnalytics(app);
+    }
+  }).catch((err) => {
+    console.warn("Firebase Analytics not supported in this environment:", err);
+  });
+}
+
+export const analytics = analyticsInstance;
+
+// Helper to log events safely
+export const logAnalyticsEvent = (eventName, eventParams = {}) => {
+  if (analyticsInstance) {
+    try {
+      logEvent(analyticsInstance, eventName, eventParams);
+    } catch (err) {
+      console.warn(`Failed to log analytics event [${eventName}]:`, err);
+    }
+  }
+};
