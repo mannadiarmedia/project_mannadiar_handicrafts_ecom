@@ -5,19 +5,221 @@ import { Link } from 'react-router-dom';
 import Lightbox from 'yet-another-react-lightbox';
 import Zoom from 'yet-another-react-lightbox/plugins/zoom';
 import 'yet-another-react-lightbox/styles.css';
-
 import SEO from '../components/SEO';
 import { GALLERY_ITEMS, GALLERY_CATEGORIES } from '../data/galleryData';
+import useWindowSize from '../hooks/useWindowSize';
 
+// ==========================================
+// MOBILE GALLERY VIEW
+// ==========================================
+function MobileGalleryView({
+  searchQuery, setSearchQuery, selectedCategory, handleCategoryChange,
+  displayedItems, filteredItems, visibleCount, handleLoadMore, handleLoadAll,
+  openLightbox
+}) {
+  return (
+    <div style={{ backgroundColor: '#ffffff', minHeight: '100vh', paddingBottom: '100px', fontFamily: 'Inter' }}>
+      {/* Mobile Header */}
+      <section style={{ backgroundColor: '#fafafa', borderBottom: '1px solid #eee', padding: '40px 16px 20px 16px', textAlign: 'center' }}>
+        <h1 style={{ fontSize: '2.2rem', fontWeight: 300, fontFamily: 'Playfair Display', margin: '0 0 12px 0', color: '#111', lineHeight: 1.2 }}>
+          Heritage Gallery
+        </h1>
+        <p style={{ fontSize: '0.95rem', color: '#666', lineHeight: 1.6, margin: '0 auto 20px auto' }}>
+          Explore our visual archive of 130+ handcrafted artworks.
+        </p>
+
+        {/* Search */}
+        <div style={{ position: 'relative', marginBottom: '16px' }}>
+          <Search size={18} color="#888" style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)' }} />
+          <input
+            type="text"
+            placeholder="Search gallery..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            style={{ width: '100%', padding: '12px 16px 12px 46px', borderRadius: '30px', border: '1px solid #ddd', backgroundColor: '#fff', fontSize: '0.9rem', outline: 'none' }}
+          />
+        </div>
+      </section>
+
+      {/* Horizontal Filter Bar */}
+      <section style={{ padding: '12px 16px', borderBottom: '1px solid #eee', position: 'sticky', top: '0', backgroundColor: 'rgba(255,255,255,0.96)', zIndex: 30 }}>
+        <div className="hide-scrollbar" style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
+          {GALLERY_CATEGORIES.map((cat) => {
+            const isSelected = selectedCategory === cat;
+            return (
+              <button
+                key={cat}
+                onClick={() => handleCategoryChange(cat)}
+                style={{
+                  padding: '6px 16px', borderRadius: '20px', flexShrink: 0,
+                  border: isSelected ? '1px solid #111' : '1px solid #e2e8f0',
+                  backgroundColor: isSelected ? '#111' : '#fff',
+                  color: isSelected ? '#fff' : '#4a5568',
+                  fontSize: '0.85rem', fontWeight: isSelected ? 600 : 400
+                }}
+              >
+                {cat}
+              </button>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* Masonry (2 columns for Mobile) */}
+      <section style={{ padding: '20px 12px' }}>
+        {displayedItems.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '40px 20px', color: '#888' }}>
+            <p>No artworks found.</p>
+          </div>
+        ) : (
+          <div className="pinterest-masonry" style={{ columnCount: 2, gap: '12px' }}>
+            {displayedItems.map((item, idx) => (
+              <div key={item.id} className="pinterest-item" onClick={() => openLightbox(idx)} style={{ marginBottom: '12px' }}>
+                <img src={item.src} alt={item.title} loading="lazy" style={{ width: '100%', height: 'auto', display: 'block', borderRadius: '8px' }} />
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Mobile Load More */}
+        {visibleCount < filteredItems.length && (
+          <div style={{ textAlign: 'center', marginTop: '40px' }}>
+            <button onClick={handleLoadMore} className="btn btn-outline" style={{ width: '100%', padding: '14px', borderRadius: '8px' }}>
+              Load More (+32)
+            </button>
+          </div>
+        )}
+      </section>
+    </div>
+  );
+}
+
+// ==========================================
+// DESKTOP GALLERY VIEW
+// ==========================================
+function DesktopGalleryView({
+  searchQuery, setSearchQuery, selectedCategory, handleCategoryChange,
+  displayedItems, filteredItems, visibleCount, handleLoadMore, handleLoadAll,
+  openLightbox, columnCount, setColumnCount
+}) {
+  return (
+    <div style={{ backgroundColor: '#ffffff', minHeight: '100vh', paddingBottom: '100px', fontFamily: 'Inter' }}>
+      {/* Hero Header */}
+      <section style={{ backgroundColor: '#fafafa', borderBottom: '1px solid #eee', padding: '70px 0 50px 0', textAlign: 'center' }}>
+        <div className="container" style={{ maxWidth: '850px', margin: '0 auto', padding: '0 20px' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', backgroundColor: '#fff', border: '1px solid #d4af37', padding: '6px 18px', borderRadius: '30px', fontSize: '0.8rem', fontWeight: 600, color: '#977218', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '20px' }}>
+            <Sparkles size={14} color="#d4af37" /> Complete Uncropped Visual Archive (130+ Artworks)
+          </div>
+          <h1 style={{ fontSize: '3rem', fontWeight: 300, fontFamily: 'Playfair Display', margin: '0 0 16px 0', color: '#111', lineHeight: 1.2 }}>
+            Living Store & Heritage Gallery
+          </h1>
+          <p style={{ fontSize: '1.05rem', color: '#666', lineHeight: 1.7, margin: '0 auto 28px auto', maxWidth: '680px' }}>
+            Explore every intricate curve, tall temple idol, wide architectural panel, and sacred heirloom in full original landscape and portrait dimensions.
+          </p>
+
+          <div style={{ maxWidth: '480px', margin: '0 auto', position: 'relative' }}>
+            <Search size={18} color="#888" style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)' }} />
+            <input
+              type="text"
+              placeholder="Search by exhibit number, category, or keyword..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              style={{ width: '100%', padding: '12px 16px 12px 46px', borderRadius: '30px', border: '1px solid #ddd', backgroundColor: '#fff', fontSize: '0.9rem', outline: 'none' }}
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* Filter & Controls Bar */}
+      <section style={{ padding: '20px 0', borderBottom: '1px solid #eee', position: 'sticky', top: '73px', backgroundColor: 'rgba(255,255,255,0.96)', backdropFilter: 'blur(10px)', zIndex: 30 }}>
+        <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', padding: '0 20px' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center' }}>
+            {GALLERY_CATEGORIES.map((cat) => {
+              const count = cat === 'All' ? GALLERY_ITEMS.length : GALLERY_ITEMS.filter(i => i.category === cat).length;
+              const isSelected = selectedCategory === cat;
+              return (
+                <button
+                  key={cat}
+                  onClick={() => handleCategoryChange(cat)}
+                  style={{
+                    padding: '7px 16px', borderRadius: '20px',
+                    border: isSelected ? '1px solid #111' : '1px solid #e2e8f0',
+                    backgroundColor: isSelected ? '#111' : '#fff',
+                    color: isSelected ? '#fff' : '#4a5568',
+                    fontSize: '0.82rem', fontWeight: isSelected ? 600 : 500,
+                    cursor: 'pointer'
+                  }}
+                >
+                  {cat} ({count})
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Column Toggle (Desktop) */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '0.8rem', color: '#888', fontWeight: 500 }}>Layout:</span>
+            <button onClick={() => setColumnCount(3)} style={{ padding: '6px 12px', borderRadius: '6px', border: columnCount === 3 ? '1px solid #111' : '1px solid #ddd', backgroundColor: columnCount === 3 ? '#111' : '#fff', color: columnCount === 3 ? '#fff' : '#666', cursor: 'pointer', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <Columns3 size={14} /> 3 Col
+            </button>
+            <button onClick={() => setColumnCount(4)} style={{ padding: '6px 12px', borderRadius: '6px', border: columnCount === 4 ? '1px solid #111' : '1px solid #ddd', backgroundColor: columnCount === 4 ? '#111' : '#fff', color: columnCount === 4 ? '#fff' : '#666', cursor: 'pointer', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <Columns4 size={14} /> 4 Col
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Masonry Layout */}
+      <section className="container" style={{ paddingTop: '40px', paddingLeft: '20px', paddingRight: '20px' }}>
+        {displayedItems.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '80px 20px', color: '#888' }}>
+            <p style={{ fontSize: '1.2rem' }}>No artworks found.</p>
+          </div>
+        ) : (
+          <div className="pinterest-masonry" style={{ columnCount: columnCount }}>
+            {displayedItems.map((item, idx) => (
+              <motion.div key={item.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.05 }} className="pinterest-item" onClick={() => openLightbox(idx)}>
+                <img src={item.src} alt={item.alt} loading="lazy" style={{ width: '100%', height: 'auto', display: 'block', borderRadius: '11px' }} />
+                <div className="pinterest-overlay">
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: '8px' }}>
+                    <div>
+                      <span style={{ fontSize: '0.72rem', color: '#d4af37', textTransform: 'uppercase', fontWeight: 600 }}>{item.category}</span>
+                      <h4 style={{ fontSize: '1rem', fontWeight: 500, fontFamily: 'Playfair Display', margin: '2px 0 0 0', color: '#fff' }}>{item.title}</h4>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        )}
+
+        {/* Load More Controls */}
+        {visibleCount < filteredItems.length && (
+          <div style={{ textAlign: 'center', marginTop: '60px' }}>
+            <button onClick={handleLoadMore} className="btn btn-outline" style={{ padding: '14px 32px', fontSize: '0.95rem' }}>
+              Load More Artworks (+32)
+            </button>
+          </div>
+        )}
+      </section>
+    </div>
+  );
+}
+
+// ==========================================
+// MAIN GALLERY EXPORT
+// ==========================================
 export default function Gallery() {
+  const { width } = useWindowSize();
+  const isMobile = width < 768;
+
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [visibleCount, setVisibleCount] = useState(32);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
-  const [columnCount, setColumnCount] = useState(4); // 3 or 4 columns
+  const [columnCount, setColumnCount] = useState(4); 
 
-  // Filter items by category & search query
   const filteredItems = useMemo(() => {
     return GALLERY_ITEMS.filter(item => {
       const matchCat = selectedCategory === 'All' || item.category === selectedCategory;
@@ -29,7 +231,6 @@ export default function Gallery() {
     });
   }, [selectedCategory, searchQuery]);
 
-  // Sliced items for smooth progressive loading
   const displayedItems = useMemo(() => {
     return filteredItems.slice(0, visibleCount);
   }, [filteredItems, visibleCount]);
@@ -52,271 +253,21 @@ export default function Gallery() {
     setVisibleCount(filteredItems.length);
   };
 
+  const props = {
+    searchQuery, setSearchQuery, selectedCategory, handleCategoryChange,
+    displayedItems, filteredItems, visibleCount, handleLoadMore, handleLoadAll,
+    openLightbox, columnCount, setColumnCount
+  };
+
   return (
-    <div style={{ backgroundColor: '#ffffff', minHeight: '100vh', paddingBottom: '100px', fontFamily: 'Inter' }}>
+    <>
       <SEO 
         title="Store & Heritage Gallery | Pinterest-Style Uncropped Masterpieces | Mannadiar Handicrafts"
         description="Explore our complete uncropped visual gallery of 130+ authentic handcrafted bronze idols, brass lamps, Tanjore paintings, and wood carvings."
         keywords="handicrafts gallery, bronze statues gallery, kerala brass lamps showroom, wood carvings display, indian temple art pinterest masonry"
       />
+      {isMobile ? <MobileGalleryView {...props} /> : <DesktopGalleryView {...props} />}
 
-      {/* Hero Header */}
-      <section style={{ backgroundColor: '#fafafa', borderBottom: '1px solid #eee', padding: '70px 0 50px 0', textAlign: 'center' }}>
-        <div className="container" style={{ maxWidth: '850px', margin: '0 auto', padding: '0 20px' }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', backgroundColor: '#fff', border: '1px solid #d4af37', padding: '6px 18px', borderRadius: '30px', fontSize: '0.8rem', fontWeight: 600, color: '#977218', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '20px' }}>
-            <Sparkles size={14} color="#d4af37" /> Complete Uncropped Visual Archive (130+ Artworks)
-          </div>
-          <h1 style={{ fontSize: '3rem', fontWeight: 300, fontFamily: 'Playfair Display', margin: '0 0 16px 0', color: '#111', lineHeight: 1.2 }}>
-            Living Store & Heritage Gallery
-          </h1>
-          <p style={{ fontSize: '1.05rem', color: '#666', lineHeight: 1.7, margin: '0 auto 28px auto', maxWidth: '680px' }}>
-            Explore every intricate curve, tall temple idol, wide architectural panel, and sacred heirloom in full original landscape and portrait dimensions.
-          </p>
-
-          {/* Search bar inside header */}
-          <div style={{ maxWidth: '480px', margin: '0 auto', position: 'relative' }}>
-            <Search size={18} color="#888" style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)' }} />
-            <input
-              type="text"
-              placeholder="Search by exhibit number, category, or keyword..."
-              value={searchQuery}
-              onChange={(e) => { setSearchQuery(e.target.value); setVisibleCount(32); }}
-              style={{
-                width: '100%',
-                padding: '12px 16px 12px 46px',
-                borderRadius: '30px',
-                border: '1px solid #ddd',
-                backgroundColor: '#fff',
-                fontSize: '0.9rem',
-                outline: 'none',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
-              }}
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery('')}
-                style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: '#888', cursor: 'pointer', fontSize: '0.85rem' }}
-              >
-                Clear
-              </button>
-            )}
-          </div>
-        </div>
-      </section>
-
-      {/* Filter & Controls Bar */}
-      <section style={{ padding: '20px 0', borderBottom: '1px solid #eee', position: 'sticky', top: '73px', backgroundColor: 'rgba(255,255,255,0.96)', backdropFilter: 'blur(10px)', zIndex: 30 }}>
-        <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', padding: '0 20px' }}>
-          {/* Category Tabs */}
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center' }}>
-            {GALLERY_CATEGORIES.map((cat) => {
-              const count = cat === 'All' ? GALLERY_ITEMS.length : GALLERY_ITEMS.filter(i => i.category === cat).length;
-              const isSelected = selectedCategory === cat;
-              return (
-                <button
-                  key={cat}
-                  onClick={() => handleCategoryChange(cat)}
-                  style={{
-                    padding: '7px 16px',
-                    borderRadius: '20px',
-                    border: isSelected ? '1px solid #111' : '1px solid #e2e8f0',
-                    backgroundColor: isSelected ? '#111' : '#fff',
-                    color: isSelected ? '#fff' : '#4a5568',
-                    fontSize: '0.82rem',
-                    fontWeight: isSelected ? 600 : 500,
-                    cursor: 'pointer',
-                    transition: 'all 0.2s',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px'
-                  }}
-                >
-                  <span>{cat}</span>
-                  <span style={{ fontSize: '0.72rem', opacity: isSelected ? 0.8 : 0.6 }}>({count})</span>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Column Toggle (Desktop) */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '0.8rem', color: '#888', fontWeight: 500 }}>Layout:</span>
-            <button
-              onClick={() => setColumnCount(3)}
-              style={{
-                padding: '6px 12px',
-                borderRadius: '6px',
-                border: columnCount === 3 ? '1px solid #111' : '1px solid #ddd',
-                backgroundColor: columnCount === 3 ? '#111' : '#fff',
-                color: columnCount === 3 ? '#fff' : '#666',
-                cursor: 'pointer',
-                fontSize: '0.75rem',
-                fontWeight: 500,
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px'
-              }}
-              title="3 Columns (Large Pins)"
-            >
-              <Columns3 size={14} /> 3 Col
-            </button>
-            <button
-              onClick={() => setColumnCount(4)}
-              style={{
-                padding: '6px 12px',
-                borderRadius: '6px',
-                border: columnCount === 4 ? '1px solid #111' : '1px solid #ddd',
-                backgroundColor: columnCount === 4 ? '#111' : '#fff',
-                color: columnCount === 4 ? '#fff' : '#666',
-                cursor: 'pointer',
-                fontSize: '0.75rem',
-                fontWeight: 500,
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px'
-              }}
-              title="4 Columns (Pinterest Density)"
-            >
-              <Columns4 size={14} /> 4 Col
-            </button>
-          </div>
-        </div>
-      </section>
-
-      {/* Pinterest-Style Masonry Layout */}
-      <section className="container" style={{ paddingTop: '40px', paddingLeft: '20px', paddingRight: '20px' }}>
-        {displayedItems.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '80px 20px', color: '#888' }}>
-            <p style={{ fontSize: '1.2rem', marginBottom: '16px' }}>No artworks found matching "{searchQuery}".</p>
-            <button onClick={() => { setSearchQuery(''); setSelectedCategory('All'); }} className="btn btn-outline">
-              Reset Filters
-            </button>
-          </div>
-        ) : (
-          <div 
-            className="pinterest-masonry"
-            style={{
-              columnCount: columnCount
-            }}
-          >
-            {displayedItems.map((item, idx) => (
-              <motion.div
-                key={item.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.05 }}
-                transition={{ duration: 0.35, delay: (idx % 8) * 0.03 }}
-                className="pinterest-item"
-                onClick={() => openLightbox(idx)}
-              >
-                {/* 100% Uncropped Original Image */}
-                <img
-                  src={item.src}
-                  alt={item.alt}
-                  loading="lazy"
-                  style={{
-                    width: '100%',
-                    height: 'auto',
-                    display: 'block',
-                    borderRadius: '11px'
-                  }}
-                />
-
-                {/* Hover Gradient Overlay with Title and Inspect button */}
-                <div className="pinterest-overlay">
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: '8px' }}>
-                    <div>
-                      <span style={{ fontSize: '0.72rem', color: '#d4af37', textTransform: 'uppercase', fontWeight: 600, letterSpacing: '0.05em' }}>
-                        {item.category}
-                      </span>
-                      <h4 style={{ fontSize: '1rem', fontWeight: 500, fontFamily: 'Playfair Display', margin: '2px 0 0 0', color: '#fff' }}>
-                        {item.title}
-                      </h4>
-                    </div>
-
-                    <div style={{
-                      backgroundColor: 'rgba(255,255,255,0.25)',
-                      backdropFilter: 'blur(4px)',
-                      padding: '8px',
-                      borderRadius: '50%',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      flexShrink: 0
-                    }}>
-                      <Maximize2 size={16} color="#fff" />
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        )}
-
-        {/* Load More Controls */}
-        {visibleCount < filteredItems.length && (
-          <div style={{ textAlign: 'center', marginTop: '60px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
-            <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', justifyContent: 'center' }}>
-              <button
-                onClick={handleLoadMore}
-                className="btn btn-outline"
-                style={{
-                  padding: '14px 32px',
-                  fontSize: '0.95rem',
-                  fontWeight: 600,
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  backgroundColor: '#fff'
-                }}
-              >
-                <span>Load More Artworks (+32)</span>
-                <ChevronDown size={16} />
-              </button>
-              
-              <button
-                onClick={handleLoadAll}
-                className="btn"
-                style={{
-                  padding: '14px 28px',
-                  fontSize: '0.95rem',
-                  fontWeight: 500,
-                  backgroundColor: '#111',
-                  color: '#fff',
-                  borderRadius: '4px',
-                  cursor: 'pointer'
-                }}
-              >
-                Show All ({filteredItems.length} Pins)
-              </button>
-            </div>
-
-            <div style={{ color: '#888', fontSize: '0.85rem' }}>
-              Showing {displayedItems.length} of {filteredItems.length} uncropped artworks
-            </div>
-          </div>
-        )}
-
-        {/* Custom Commission Banner */}
-        <div style={{ marginTop: '80px', padding: '48px 32px', backgroundColor: '#111', color: '#fff', borderRadius: '12px', textAlign: 'center' }}>
-          <h3 style={{ fontSize: '2.2rem', fontFamily: 'Playfair Display', fontWeight: 300, margin: '0 0 12px 0' }}>
-            Commission a Custom Temple Sculpture
-          </h3>
-          <p style={{ color: '#aaa', maxWidth: '640px', margin: '0 auto 28px auto', fontSize: '1rem', lineHeight: 1.6 }}>
-            Did you spot a sculpture or panel in our gallery you'd like crafted in custom dimensions, metals, or temple specifications? Our hereditary artisans can craft it for you.
-          </p>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', flexWrap: 'wrap' }}>
-            <Link to="/corporate-gifting" className="btn" style={{ backgroundColor: '#d4af37', color: '#fff', padding: '12px 28px', textDecoration: 'none', fontWeight: 500 }}>
-              Custom Commission Inquiry
-            </Link>
-            <Link to="/shop" className="btn btn-outline" style={{ color: '#fff', borderColor: '#555', padding: '12px 28px', textDecoration: 'none' }}>
-              Browse Store Catalog <ArrowRight size={16} style={{ display: 'inline', verticalAlign: 'middle' }} />
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Fullscreen Uncropped Lightbox Viewer */}
       <Lightbox
         open={lightboxOpen}
         close={() => setLightboxOpen(false)}
@@ -325,6 +276,6 @@ export default function Gallery() {
         plugins={[Zoom]}
         zoom={{ maxZoomPixelRatio: 3 }}
       />
-    </div>
+    </>
   );
 }

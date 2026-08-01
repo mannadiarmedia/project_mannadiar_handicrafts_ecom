@@ -59,8 +59,22 @@ export default function AdminCategories() {
   };
 
   const handleDeleteCategory = async (id, name) => {
-    if (window.confirm(`Are you sure you want to delete the "${name}" category?\n\nNote: Make sure no products are using this category first.`)) {
+    if (window.confirm(`Are you sure you want to delete the "${name}" category?`)) {
       try {
+        // 1. Safety Check: Ensure no products are using this category
+        const { count, error: countError } = await supabase
+          .from('products')
+          .select('*', { count: 'exact', head: true })
+          .eq('category', name);
+
+        if (countError) throw countError;
+
+        if (count > 0) {
+          alert(`Cannot delete: There are currently ${count} product(s) in the "${name}" category.\n\nPlease reassign or delete these products first.`);
+          return;
+        }
+
+        // 2. Proceed with deletion
         const { error } = await supabase
           .from('categories')
           .delete()

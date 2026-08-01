@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { supabase } from '../supabaseClient';
 import ProductCard from '../components/ProductCard';
 import { GALLERY_ITEMS } from '../data/galleryData';
+import useWindowSize from '../hooks/useWindowSize';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -19,47 +20,189 @@ const staggerContainer = {
   }
 };
 
-export default function Home({ addToCart }) {
-  const navigate = useNavigate();
-  const [featuredProducts, setFeaturedProducts] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [productsRes, categoriesRes] = await Promise.all([
-          supabase.from('products').select('*').limit(8),
-          supabase.from('categories').select('*').order('name').limit(4)
-        ]);
-          
-        if (productsRes.error) throw productsRes.error;
-        if (categoriesRes.error) throw categoriesRes.error;
-        
-        setFeaturedProducts(productsRes.data);
-        setCategories(categoriesRes.data);
-      } catch (error) {
-        console.error('Error fetching data:', error.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    fetchData();
-  }, []);
-
-  // Helper to map category name to a static image for the grid
-  const getCategoryImage = (categoryName) => {
-    const mapping = {
-      'Brass': '/images/1_brass_lamp.jpg',
-      'Bronze': '/images/2_nataraja.jpg',
-      'Wood': '/images/8_elephant.jpg',
-      'Stone': '/images/10_ganesha.jpg',
-      'Paintings': '/images/5_madhubani.jpg'
-    };
-    return mapping[categoryName] || '/images/6_vase.jpg';
+// --- Helper ---
+const getCategoryImage = (categoryName) => {
+  const mapping = {
+    'Brass': '/images/1_brass_lamp.jpg',
+    'Bronze': '/images/2_nataraja.jpg',
+    'Wood': '/images/8_elephant.jpg',
+    'Stone': '/images/10_ganesha.jpg',
+    'Paintings': '/images/5_madhubani.jpg'
   };
+  return mapping[categoryName] || '/images/6_vase.jpg';
+};
 
+// ==========================================
+// MOBILE HOME VIEW (App-Like Experience)
+// ==========================================
+function MobileHomeView({ featuredProducts, categories, loading, navigate, addToCart }) {
+  return (
+    <>
+      {/* 1. Mobile Portrait Hero */}
+      <section style={{ 
+        position: 'relative', 
+        height: '85vh', 
+        overflow: 'hidden',
+        display: 'flex',
+        alignItems: 'flex-end',
+        paddingBottom: '60px'
+      }}>
+        <div 
+          style={{
+            position: 'absolute', inset: 0,
+            backgroundImage: 'url(/images/4_buddha.jpg)', 
+            backgroundSize: 'cover', 
+            backgroundPosition: 'center',
+          }}
+        />
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.2) 60%, rgba(0,0,0,0) 100%)' }} />
+        
+        <div className="container" style={{ position: 'relative', zIndex: 10, color: 'white', textAlign: 'center' }}>
+          <span style={{ display: 'block', fontSize: '0.75rem', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '12px', fontFamily: 'Inter', color: '#d4af37' }}>
+            The Essence of India
+          </span>
+          <h1 style={{ fontSize: '2.5rem', fontWeight: 300, lineHeight: 1.15, marginBottom: '16px', fontFamily: 'Playfair Display' }}>
+            Divine Masterpieces
+          </h1>
+          <p style={{ fontSize: '1rem', lineHeight: 1.5, marginBottom: '32px', opacity: 0.9, fontFamily: 'Inter', padding: '0 10px' }}>
+            Museum-quality bronze and wood sculptures for your sacred space.
+          </p>
+          <button 
+            className="btn btn-primary" 
+            style={{ width: '100%', backgroundColor: 'white', color: 'black', padding: '16px', fontSize: '1.05rem', fontFamily: 'Inter', borderRadius: '30px' }}
+            onClick={() => navigate('/shop')}
+          >
+            Explore Collection
+          </button>
+        </div>
+      </section>
+
+      {/* 2. Swipeable Trust Indicators */}
+      <section style={{ backgroundColor: '#f9f9f9', padding: '24px 0', borderBottom: '1px solid var(--color-border)' }}>
+        <div className="mobile-swipe-strip hide-scrollbar" style={{ paddingBottom: '0' }}>
+          <div className="mobile-swipe-item" style={{ display: 'flex', alignItems: 'center', gap: '12px', color: '#444', backgroundColor: '#fff', padding: '12px 20px', borderRadius: '12px', border: '1px solid #eee' }}>
+            <Gem size={24} strokeWidth={1.5} color="#b49348" />
+            <div>
+              <div style={{ fontWeight: 600, fontSize: '0.9rem', fontFamily: 'Inter' }}>Museum Quality</div>
+            </div>
+          </div>
+          <div className="mobile-swipe-item" style={{ display: 'flex', alignItems: 'center', gap: '12px', color: '#444', backgroundColor: '#fff', padding: '12px 20px', borderRadius: '12px', border: '1px solid #eee' }}>
+            <Truck size={24} strokeWidth={1.5} color="#b49348" />
+            <div>
+              <div style={{ fontWeight: 600, fontSize: '0.9rem', fontFamily: 'Inter' }}>Global Shipping</div>
+            </div>
+          </div>
+          <div className="mobile-swipe-item" style={{ display: 'flex', alignItems: 'center', gap: '12px', color: '#444', backgroundColor: '#fff', padding: '12px 20px', borderRadius: '12px', border: '1px solid #eee' }}>
+            <ShieldCheck size={24} strokeWidth={1.5} color="#b49348" />
+            <div>
+              <div style={{ fontWeight: 600, fontSize: '0.9rem', fontFamily: 'Inter' }}>Direct from Artisans</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 3. Horizontal Swipeable Categories */}
+      <section style={{ padding: '40px 0 20px 0' }}>
+        <h2 style={{ fontSize: '1.75rem', fontWeight: 300, textAlign: 'left', marginBottom: '24px', paddingLeft: '20px', fontFamily: 'Playfair Display' }}>Shop by Category</h2>
+        <div className="mobile-swipe-strip hide-scrollbar">
+          {categories.map((cat) => (
+            <div 
+              key={cat.id} 
+              className="mobile-swipe-item"
+              style={{ cursor: 'pointer', textAlign: 'center', width: '120px' }}
+              onClick={() => navigate(`/shop?category=${cat.name}`)}
+            >
+              <div style={{ width: '120px', height: '120px', backgroundColor: '#f4f4f4', borderRadius: '50%', marginBottom: '12px', overflow: 'hidden' }}>
+                <img src={getCategoryImage(cat.name)} alt={cat.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              </div>
+              <h3 style={{ fontSize: '0.95rem', fontWeight: 500, fontFamily: 'Inter' }}>{cat.name}</h3>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* 4. Horizontal Swipeable Masterpieces */}
+      <section style={{ padding: '40px 0 20px 0', backgroundColor: '#fafafa', borderTop: '1px solid var(--color-border)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '24px', padding: '0 20px' }}>
+          <div>
+            <span style={{ fontSize: '0.75rem', color: '#666', textTransform: 'uppercase', letterSpacing: '0.05em', fontFamily: 'Inter' }}>New Arrivals</span>
+            <h2 style={{ fontSize: '1.75rem', fontWeight: 300, marginTop: '4px', fontFamily: 'Playfair Display' }}>Featured</h2>
+          </div>
+          <Link to="/shop" style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#b49348', textDecoration: 'none', fontWeight: 600, fontSize: '0.85rem' }}>
+            View All <ArrowRight size={14} />
+          </Link>
+        </div>
+
+        <div className="mobile-swipe-strip hide-scrollbar">
+          {loading ? (
+            <div style={{ padding: '40px 20px', color: '#666' }}>Loading...</div>
+          ) : (
+            featuredProducts.map((product) => (
+              <div key={product.id} className="mobile-swipe-item" style={{ width: '260px' }}>
+                <ProductCard product={product} addToCart={addToCart} />
+              </div>
+            ))
+          )}
+        </div>
+      </section>
+
+      {/* 5. Stacked Story Section */}
+      <section style={{ padding: '0', overflow: 'hidden', backgroundColor: '#fff' }}>
+        <img src="/images/7_swan.jpg" alt="Artisan Crafting" style={{ width: '100%', height: '300px', objectFit: 'cover' }} />
+        <div style={{ padding: '40px 20px' }}>
+          <h2 style={{ fontSize: '2rem', fontWeight: 300, marginBottom: '20px', lineHeight: 1.2, fontFamily: 'Playfair Display' }}>The Story Behind Our Masterpieces</h2>
+          <p style={{ color: '#555', lineHeight: 1.7, marginBottom: '24px', fontFamily: 'Inter', fontSize: '0.95rem' }}>
+            Every piece in our collection is born from centuries of preserved heritage. Our artisans in Swamimalai, Mahabalipuram, and Rajasthan follow strict Vedic principles to imbue each piece with positive spiritual energy.
+          </p>
+          <button 
+            className="btn" 
+            style={{ width: '100%', padding: '14px', fontSize: '1rem', border: '1px solid #333', backgroundColor: 'transparent', borderRadius: '30px', fontFamily: 'Inter' }}
+            onClick={() => navigate('/about')}
+          >
+            Read Our Full Story
+          </button>
+        </div>
+      </section>
+
+      {/* 6. Condensed Gallery Showcase */}
+      <section style={{ padding: '50px 20px', backgroundColor: '#fcfcfc', borderTop: '1px solid #eee' }}>
+        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', backgroundColor: '#fff', border: '1px solid #d4af37', padding: '4px 12px', borderRadius: '20px', fontSize: '0.7rem', fontWeight: 600, color: '#977218', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '12px' }}>
+            <Sparkles size={12} /> Visual Archive
+          </div>
+          <h2 style={{ fontSize: '2rem', fontWeight: 300, fontFamily: 'Playfair Display', margin: '0 0 12px 0' }}>
+            Living Heritage
+          </h2>
+        </div>
+
+        <div className="pinterest-masonry" style={{ columnCount: 2, marginBottom: '32px' }}>
+          {GALLERY_ITEMS.slice(0, 6).map((item, idx) => (
+            <div
+              key={item.id}
+              onClick={() => navigate('/gallery')}
+              className="pinterest-item"
+              style={{ marginBottom: '16px' }}
+            >
+              <img src={item.src} alt={item.title} loading="lazy" style={{ width: '100%', height: 'auto', display: 'block', borderRadius: '8px' }} />
+            </div>
+          ))}
+        </div>
+
+        <button
+          onClick={() => navigate('/gallery')}
+          style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '14px', backgroundColor: '#111', color: '#fff', border: 'none', borderRadius: '30px', fontSize: '1rem', fontFamily: 'Inter' }}
+        >
+          <ImageIcon size={18} /> View All 130+ Artworks
+        </button>
+      </section>
+    </>
+  );
+}
+
+// ==========================================
+// DESKTOP HOME VIEW (Sprawling Editorial)
+// ==========================================
+function DesktopHomeView({ featuredProducts, categories, loading, navigate, addToCart }) {
   return (
     <>
       {/* Dynamic Hero Section */}
@@ -80,7 +223,7 @@ export default function Home({ addToCart }) {
             backgroundPosition: 'center',
           }}
           initial={{ y: 0 }}
-          animate={{ y: 0 }} // Simple static setup, complex parallax requires useScroll, we'll keep it simple for now or use scale
+          animate={{ y: 0 }}
           whileInView={{ scale: 1.05 }}
           transition={{ duration: 10, ease: "linear" }}
         />
@@ -297,4 +440,44 @@ export default function Home({ addToCart }) {
       </section>
     </>
   );
+}
+
+// ==========================================
+// MAIN COMPONENT EXPORT
+// ==========================================
+export default function Home({ addToCart }) {
+  const navigate = useNavigate();
+  const { width } = useWindowSize();
+  const isMobile = width < 768;
+
+  const [featuredProducts, setFeaturedProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [productsRes, categoriesRes] = await Promise.all([
+          supabase.from('products').select('*').limit(8),
+          supabase.from('categories').select('*').order('name').limit(4)
+        ]);
+          
+        if (productsRes.error) throw productsRes.error;
+        if (categoriesRes.error) throw categoriesRes.error;
+        
+        setFeaturedProducts(productsRes.data);
+        setCategories(categoriesRes.data);
+      } catch (error) {
+        console.error('Error fetching data:', error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchData();
+  }, []);
+
+  const props = { featuredProducts, categories, loading, navigate, addToCart };
+
+  return isMobile ? <MobileHomeView {...props} /> : <DesktopHomeView {...props} />;
 }

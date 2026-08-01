@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { ShoppingCart, Heart } from 'lucide-react';
+import { ShoppingCart, Heart, ClipboardList } from 'lucide-react';
 import { useWishlist } from '../contexts/WishlistContext';
+import { useEnquiry } from '../contexts/EnquiryContext';
 
 export default function ProductCard({ product, addToCart }) {
   const navigate = useNavigate();
   const [isHovered, setIsHovered] = useState(false);
   const { isInWishlist, toggleWishlist } = useWishlist();
+  const { addToEnquiry } = useEnquiry();
   const isWishlisted = isInWishlist(product.id);
 
   // Fallback to primary image if gallery is empty
@@ -113,21 +115,38 @@ export default function ProductCard({ product, addToCart }) {
           )}
         </div>
         
-        {addToCart && !product.out_of_stock && (
+        <div style={{ display: 'flex', gap: '8px' }}>
+          {/* Enquiry Button */}
           <button 
             onClick={(e) => {
-              e.stopPropagation(); // prevent card click
-              addToCart(product);
+              e.stopPropagation();
+              addToEnquiry(product);
             }}
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '36px', height: '36px', borderRadius: '50%', backgroundColor: '#111', color: '#fff', border: 'none', cursor: 'pointer', transition: 'background-color 0.2s' }}
-            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#333'}
-            onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#111'}
-            title="Add to Cart"
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '36px', height: '36px', borderRadius: '50%', backgroundColor: '#fff', color: '#333', border: '1px solid #ddd', cursor: 'pointer', transition: 'background-color 0.2s, border-color 0.2s' }}
+            onMouseOver={(e) => { e.currentTarget.style.backgroundColor = '#f5f5f5'; e.currentTarget.style.borderColor = '#ccc'; }}
+            onMouseOut={(e) => { e.currentTarget.style.backgroundColor = '#fff'; e.currentTarget.style.borderColor = '#ddd'; }}
+            title="Add to Enquiry Quote"
           >
-            <ShoppingCart size={16} />
+            <ClipboardList size={16} />
           </button>
-        )}
+
+          {addToCart && !product.out_of_stock && (
+            <button 
+              onClick={(e) => {
+                e.stopPropagation(); // prevent card click
+                addToCart(product);
+              }}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '36px', height: '36px', borderRadius: '50%', backgroundColor: '#111', color: '#fff', border: 'none', cursor: 'pointer', transition: 'background-color 0.2s' }}
+              onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#333'}
+              onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#111'}
+              title="Add to Cart"
+            >
+              <ShoppingCart size={16} />
+            </button>
+          )}
+        </div>
       </div>
     </motion.div>
   );
 }
+

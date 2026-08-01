@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, Outlet } from 'react-router-dom';
-import { ShoppingCart, Menu, X, ArrowRight, Search, Heart, User } from 'lucide-react';
+import { ShoppingCart, Menu, X, ArrowRight, Search, Heart, User, ClipboardList } from 'lucide-react';
 import SearchModal from './components/SearchModal';
 import WishlistDrawer from './components/WishlistDrawer';
 import AnalyticsTracker from './components/AnalyticsTracker';
@@ -28,6 +28,8 @@ import AdminInquiries from './pages/admin/AdminInquiries';
 // Auth Context & Pages
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { WishlistProvider, useWishlist } from './contexts/WishlistContext';
+import { EnquiryProvider, useEnquiry } from './contexts/EnquiryContext';
+import EnquiryDrawer from './components/EnquiryDrawer';
 import Auth from './pages/Auth';
 import Profile from './pages/Profile';
 import B2B from './pages/B2B';
@@ -37,6 +39,7 @@ import './index.css';
 function StorefrontLayout({ cartOpen, setCartOpen, cart, setCart, mobileMenuOpen, setMobileMenuOpen, removeFromCart, cartTotal, searchOpen, setSearchOpen, wishlistOpen, setWishlistOpen }) {
   const { user } = useAuth();
   const { wishlistCount } = useWishlist();
+  const { enquiryItems, setIsEnquiryOpen } = useEnquiry();
   
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
@@ -101,10 +104,10 @@ function StorefrontLayout({ cartOpen, setCartOpen, cart, setCart, mobileMenuOpen
             </button>
           </div>
 
-          {/* RIGHT: Wishlist, Login, Cart */}
+          {/* RIGHT: Wishlist, Login, Enquiry, Cart */}
           <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
             
-            {/* Pill Container for Wishlist & Login */}
+            {/* Pill Container for Wishlist, Enquiry & Login */}
             <div className="desktop-only" style={{ 
               display: 'flex', alignItems: 'center', 
               background: '#fff', border: '1px solid #eae5d9', borderRadius: '30px', 
@@ -116,6 +119,16 @@ function StorefrontLayout({ cartOpen, setCartOpen, cart, setCart, mobileMenuOpen
               >
                 <Heart size={16} color={wishlistCount > 0 ? "#e53e3e" : "currentColor"} fill={wishlistCount > 0 ? "#e53e3e" : "transparent"} />
                 <span style={{ fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.05em' }}>WISHLIST ({wishlistCount})</span>
+              </div>
+
+              <div style={{ width: '1px', height: '16px', backgroundColor: '#eae5d9' }}></div>
+
+              <div 
+                onClick={() => setIsEnquiryOpen(true)}
+                style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', color: '#333' }}
+              >
+                <ClipboardList size={16} color={enquiryItems.length > 0 ? "#2e7d32" : "currentColor"} />
+                <span style={{ fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.05em' }}>QUOTE ({enquiryItems.length})</span>
               </div>
               
               <div style={{ width: '1px', height: '16px', backgroundColor: '#eae5d9' }}></div>
@@ -372,48 +385,52 @@ function App() {
   return (
     <AuthProvider>
       <WishlistProvider>
-        <Router>
-          <AnalyticsTracker />
-          <Routes>
-            {/* Admin Routes */}
-          <Route path="/admin" element={<AdminLayout />}>
-            <Route index element={<AdminDashboard />} />
-            <Route path="products" element={<AdminProducts />} />
-            <Route path="products/new" element={<AdminAddProduct />} />
-            <Route path="products/edit/:id" element={<AdminEditProduct />} />
-            <Route path="categories" element={<AdminCategories />} />
-            <Route path="orders" element={<AdminOrders />} />
-            <Route path="inquiries" element={<AdminInquiries />} />
-            <Route path="*" element={<div>Admin Route Not Found</div>} />
-          </Route>
+        <EnquiryProvider>
+          <Router>
+            <AnalyticsTracker />
+            <Routes>
+              {/* Admin Routes */}
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route index element={<AdminDashboard />} />
+              <Route path="products" element={<AdminProducts />} />
+              <Route path="products/new" element={<AdminAddProduct />} />
+              <Route path="products/edit/:id" element={<AdminEditProduct />} />
+              <Route path="categories" element={<AdminCategories />} />
+              <Route path="orders" element={<AdminOrders />} />
+              <Route path="inquiries" element={<AdminInquiries />} />
+              <Route path="*" element={<div>Admin Route Not Found</div>} />
+            </Route>
 
-          {/* Storefront Routes */}
-          <Route element={<StorefrontLayout cartOpen={cartOpen} setCartOpen={setCartOpen} cart={cart} setCart={setCart} mobileMenuOpen={mobileMenuOpen} setMobileMenuOpen={setMobileMenuOpen} removeFromCart={removeFromCart} cartTotal={cartTotal} searchOpen={searchOpen} setSearchOpen={setSearchOpen} wishlistOpen={wishlistOpen} setWishlistOpen={setWishlistOpen} />}>
-            <Route path="/" element={<Home addToCart={addToCart} />} />
-            <Route path="/shop" element={<Shop addToCart={addToCart} />} />
-            <Route path="/gallery" element={<Gallery />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/product/:id" element={<ProductDetails addToCart={addToCart} />} />
-            <Route path="/checkout" element={<Checkout cart={cart} setCart={setCart} cartTotal={cartTotal} />} />
-            <Route path="/order-confirmation" element={<OrderConfirmation />} />
-            <Route path="/shipping-policy" element={<StaticPage title="Shipping Policy" />} />
-            <Route path="/privacy-policy" element={<StaticPage title="Privacy Policy" />} />
-            <Route path="/refund-policy" element={<StaticPage title="Refund Policy" />} />
-            <Route path="/terms-of-service" element={<StaticPage title="Terms of Service" />} />
-            <Route path="/contact-information" element={<Contact />} />
-            <Route path="/corporate-gifting" element={<B2B />} />
-            <Route path="*" element={<div>Page Not Found</div>} />
-          </Route>
-          </Routes>
-          <SearchModal isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
-          <WishlistDrawer isOpen={wishlistOpen} onClose={() => setWishlistOpen(false)} addToCart={addToCart} />
-        </Router>
+            {/* Storefront Routes */}
+            <Route element={<StorefrontLayout cartOpen={cartOpen} setCartOpen={setCartOpen} cart={cart} setCart={setCart} mobileMenuOpen={mobileMenuOpen} setMobileMenuOpen={setMobileMenuOpen} removeFromCart={removeFromCart} cartTotal={cartTotal} searchOpen={searchOpen} setSearchOpen={setSearchOpen} wishlistOpen={wishlistOpen} setWishlistOpen={setWishlistOpen} />}>
+              <Route path="/" element={<Home addToCart={addToCart} />} />
+              <Route path="/shop" element={<Shop addToCart={addToCart} />} />
+              <Route path="/gallery" element={<Gallery />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/product/:id" element={<ProductDetails addToCart={addToCart} />} />
+              <Route path="/checkout" element={<Checkout cart={cart} setCart={setCart} cartTotal={cartTotal} />} />
+              <Route path="/order-confirmation" element={<OrderConfirmation />} />
+              <Route path="/shipping-policy" element={<StaticPage title="Shipping Policy" />} />
+              <Route path="/privacy-policy" element={<StaticPage title="Privacy Policy" />} />
+              <Route path="/refund-policy" element={<StaticPage title="Refund Policy" />} />
+              <Route path="/terms-of-service" element={<StaticPage title="Terms of Service" />} />
+              <Route path="/contact-information" element={<Contact />} />
+              <Route path="/corporate-gifting" element={<B2B />} />
+              <Route path="*" element={<div>Page Not Found</div>} />
+            </Route>
+            </Routes>
+            <SearchModal isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
+            <WishlistDrawer isOpen={wishlistOpen} onClose={() => setWishlistOpen(false)} addToCart={addToCart} />
+            <EnquiryDrawer />
+          </Router>
+        </EnquiryProvider>
       </WishlistProvider>
     </AuthProvider>
   );
 }
 
 export default App;
+

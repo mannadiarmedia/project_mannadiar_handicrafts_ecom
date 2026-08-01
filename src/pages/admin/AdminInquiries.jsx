@@ -108,9 +108,30 @@ export default function AdminInquiries() {
                 </div>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: '0.85rem', color: '#666', textTransform: 'uppercase', marginBottom: '8px' }}>Requirements</div>
-                  <p style={{ color: '#444', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
+                  <p style={{ color: '#444', lineHeight: 1.6, whiteSpace: 'pre-wrap', marginBottom: inquiry.products ? '24px' : '0' }}>
                     {inquiry.requirements}
                   </p>
+
+                  {inquiry.products && (
+                    <>
+                      <div style={{ fontSize: '0.85rem', color: '#666', textTransform: 'uppercase', marginBottom: '12px', borderTop: '1px solid #eee', paddingTop: '24px' }}>Requested Items from Quote Cart</div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                        {(() => {
+                          try {
+                            const parsed = JSON.parse(inquiry.products);
+                            return parsed.map((item, idx) => (
+                              <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', backgroundColor: '#f9f9f9', padding: '12px 16px', borderRadius: '4px', border: '1px solid #eee' }}>
+                                <span style={{ fontWeight: 500, color: '#333' }}>{item.title}</span>
+                                <span style={{ color: '#666', fontSize: '0.9rem' }}>SKU: {item.sku || 'N/A'}</span>
+                              </div>
+                            ));
+                          } catch (e) {
+                            return <div style={{ color: '#e53935', fontSize: '0.9rem' }}>Error loading requested products.</div>;
+                          }
+                        })()}
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
