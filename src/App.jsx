@@ -161,7 +161,7 @@ function StorefrontLayout({ cartOpen, setCartOpen, cart, setCart, mobileMenuOpen
 
       {/* Mobile Menu */}
       {mobileMenuOpen && (
-        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 50 }} onClick={() => setMobileMenuOpen(false)}>
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000 }} onClick={() => setMobileMenuOpen(false)}>
           <div style={{ width: '80%', maxWidth: '300px', height: '100%', backgroundColor: 'var(--color-bg)', padding: '24px' }} onClick={e => e.stopPropagation()}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '32px' }}>
               <h2 style={{ fontSize: '1.25rem', fontWeight: 600 }}>Menu</h2>
@@ -287,10 +287,10 @@ function StorefrontLayout({ cartOpen, setCartOpen, cart, setCart, mobileMenuOpen
       {cartOpen && (
         <>
           <div 
-            style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 50 }}
+            style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000 }}
             onClick={() => setCartOpen(false)}
           />
-          <div style={{ position: 'fixed', top: 0, right: 0, bottom: 0, width: '100%', maxWidth: '400px', backgroundColor: 'var(--color-bg)', zIndex: 60, padding: '24px', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ position: 'fixed', top: 0, right: 0, bottom: 0, width: '100%', maxWidth: '400px', backgroundColor: 'var(--color-bg)', zIndex: 1001, padding: '24px', display: 'flex', flexDirection: 'column' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
               <h2 style={{ fontSize: '1.25rem', fontWeight: 500 }}>Your Cart ({cart.length})</h2>
               <X size={24} style={{ cursor: 'pointer' }} onClick={() => setCartOpen(false)} />

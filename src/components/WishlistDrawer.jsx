@@ -29,7 +29,7 @@ export default function WishlistDrawer({ isOpen, onClose, addToCart }) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 60, backdropFilter: 'blur(2px)' }}
+            style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000, backdropFilter: 'blur(2px)' }}
             onClick={onClose}
           />
 
@@ -47,7 +47,7 @@ export default function WishlistDrawer({ isOpen, onClose, addToCart }) {
               width: '100%',
               maxWidth: '420px',
               backgroundColor: '#fff',
-              zIndex: 70,
+              zIndex: 1001,
               display: 'flex',
               flexDirection: 'column',
               boxShadow: '-4px 0 24px rgba(0,0,0,0.15)'
