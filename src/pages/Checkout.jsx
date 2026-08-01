@@ -103,17 +103,17 @@ function CheckoutForm({ formData, handleChange, handleSubmit, loading, isIndia, 
             </select>
 
             <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '16px' }}>
-              <input type="text" name="firstName" placeholder="First name" required value={formData.firstName} onChange={handleChange} style={{ flex: 1, padding: '12px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '1rem', fontFamily: 'Inter' }} />
-              <input type="text" name="lastName" placeholder="Last name" required value={formData.lastName} onChange={handleChange} style={{ flex: 1, padding: '12px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '1rem', fontFamily: 'Inter' }} />
+              <input type="text" name="firstName" placeholder="First name" required value={formData.firstName} onChange={handleChange} style={{ flex: 1, padding: '12px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '1rem', fontFamily: 'Inter', minWidth: 0, width: '100%' }} />
+              <input type="text" name="lastName" placeholder="Last name" required value={formData.lastName} onChange={handleChange} style={{ flex: 1, padding: '12px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '1rem', fontFamily: 'Inter', minWidth: 0, width: '100%' }} />
             </div>
 
             <input type="text" name="address" placeholder="Address" required value={formData.address} onChange={handleChange} style={{ width: '100%', padding: '12px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '1rem', fontFamily: 'Inter' }} />
 
             <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '16px' }}>
-              <input type="text" name="city" placeholder="City" required value={formData.city} onChange={handleChange} style={{ flex: 1, padding: '12px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '1rem', fontFamily: 'Inter' }} />
+              <input type="text" name="city" placeholder="City" required value={formData.city} onChange={handleChange} style={{ flex: 1, padding: '12px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '1rem', fontFamily: 'Inter', minWidth: 0, width: '100%' }} />
               <div style={{ display: 'flex', gap: '16px', flex: isMobile ? 'none' : 2 }}>
-                <input type="text" name="state" placeholder="State" required value={formData.state} onChange={handleChange} style={{ flex: 1, padding: '12px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '1rem', fontFamily: 'Inter' }} />
-                <input type="text" name="pin" placeholder="PIN code" required value={formData.pin} onChange={handleChange} style={{ flex: 1, padding: '12px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '1rem', fontFamily: 'Inter' }} />
+                <input type="text" name="state" placeholder="State" required value={formData.state} onChange={handleChange} style={{ flex: 1, padding: '12px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '1rem', fontFamily: 'Inter', minWidth: 0, width: '100%' }} />
+                <input type="text" name="pin" placeholder="PIN code" required value={formData.pin} onChange={handleChange} style={{ flex: 1, padding: '12px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '1rem', fontFamily: 'Inter', minWidth: 0, width: '100%' }} />
               </div>
             </div>
 
